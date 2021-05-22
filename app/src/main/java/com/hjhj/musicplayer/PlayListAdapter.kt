@@ -15,8 +15,8 @@ class PlayListAdapter(private val callback:(MusicModel)->Unit): ListAdapter<Musi
     inner class ViewHolder(private val view:View): RecyclerView.ViewHolder(view) {
         fun bind(item:MusicModel){
             val trackTextView = view.findViewById<TextView>(R.id.itemTrackTextView)
-            val artistTextView = view.findViewById<TextView>(R.id.artistTextView)
-            val coverImageView = view.findViewById<ImageView>(R.id.coverImageView)
+            val artistTextView = view.findViewById<TextView>(R.id.itemArtistTextView)
+            val coverImageView = view.findViewById<ImageView>(R.id.itemCoverImageView)
 
             trackTextView.text = item.track
             artistTextView.text = item.artist

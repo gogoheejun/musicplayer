@@ -6,6 +6,9 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
 import com.hjhj.musicplayer.databinding.FragmentPlayerBinding
 import com.hjhj.musicplayer.service.MusicDto
 import com.hjhj.musicplayer.service.MusicService
@@ -19,6 +22,7 @@ class PlayerFragment: Fragment(R.layout.fragment_player){
 
     private var binding: FragmentPlayerBinding? = null
     private var isWatchingPlayListView = true
+    private var player:SimpleExoPlayer? = null
     private lateinit var playListAdapter: PlayListAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -27,10 +31,52 @@ class PlayerFragment: Fragment(R.layout.fragment_player){
         val fragmentPlayerBinding = FragmentPlayerBinding.bind(view)
         binding = fragmentPlayerBinding
 
+        initPlayView(fragmentPlayerBinding)
+        //재생버튼ui처리
         initPlayListButton(fragmentPlayerBinding)
+        //재생버튼 동작처리
+        initPlayControlButtons(fragmentPlayerBinding)
         initRecyclerView(fragmentPlayerBinding)
 
         getVideoListFromServer()
+    }
+
+    private fun initPlayControlButtons(fragmentPlayerBinding: FragmentPlayerBinding) {
+        fragmentPlayerBinding.playControlImageView.setOnClickListener {
+            val player = this.player?: return@setOnClickListener
+            if(player.isPlaying){
+                player.pause()
+            }else{
+                player.play()
+            }
+        }
+        fragmentPlayerBinding.skipNextImageView.setOnClickListener {
+
+        }
+        fragmentPlayerBinding.skipPrevImageView.setOnClickListener {
+
+        }
+    }
+
+
+    private fun initPlayView(fragmentPlayerBinding: FragmentPlayerBinding) {
+        context?.let{
+            player = SimpleExoPlayer.Builder(it).build()
+        }
+        fragmentPlayerBinding.playerView.player = player
+        binding?.let{ binding->
+            player?.addListener(object: Player.EventListener{
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    super.onIsPlayingChanged(isPlaying)
+                    if(isPlaying){
+                        binding.playControlImageView.setImageResource(R.drawable.ic_baseline_pause_24)
+                    }else{
+                        binding.playControlImageView.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                    }
+                }
+            })
+
+        }
     }
 
     private fun initRecyclerView(fragmentPlayerBinding: FragmentPlayerBinding) {
@@ -72,6 +118,9 @@ class PlayerFragment: Fragment(R.layout.fragment_player){
                                     //mapper는 내가 만든 확장함수임. 반환타입은 musicmodel
                                     musicEntity.mapper(index.toLong())
                                 }
+
+                                setMusicList(modelList)
+
                                 playListAdapter.submitList(modelList)
 
                             }
@@ -84,6 +133,19 @@ class PlayerFragment: Fragment(R.layout.fragment_player){
 
                     })
             }
+    }
+
+    private fun setMusicList(modelList: List<MusicModel>) {
+        context?.let{
+            player?.addMediaItems(modelList.map{ musicModel->
+                MediaItem.Builder()
+                    .setMediaId(musicModel.id.toString())
+                    .setUri(musicModel.streamUrl)
+                    .build()
+            })
+            player?.prepare()
+            player?.play()
+        }
     }
 
     companion object{
