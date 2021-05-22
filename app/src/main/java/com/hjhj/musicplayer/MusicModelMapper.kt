@@ -9,6 +9,6 @@ fun MusicEntity.mapper(id:Long): MusicModel =
         id = id,
         streamUrl = this.streamUrl,
         coverUrl = this.coverUrl,
-        trakc = track, //this생략(this는 musicEntity)
+        track = track, //this생략(this는 musicEntity)
         artist = artist
     )
